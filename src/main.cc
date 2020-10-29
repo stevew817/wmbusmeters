@@ -448,6 +448,10 @@ shared_ptr<WMBus> create_wmbus_object(Detected *detected, Configuration *config,
         wmbus = openRC1180(detected->found_file, manager, serial_override);
         break;
     }
+    case DEVICE_SILABS:
+        verbose("(silabs) on %s\n", detected->found_file.c_str());
+        wmbus = openSilabs(detected->found_file, 115200, manager, serial_override);
+        break;
     case DEVICE_UNKNOWN:
         warning("(main) internal error! cannot create an unknown device! exiting!\n");
         if (config->daemon) {

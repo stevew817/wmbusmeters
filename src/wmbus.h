@@ -61,6 +61,7 @@ struct SpecifiedDevice
     X(RC1180,rc1180)         \
     X(RTL433,rtl433)         \
     X(RTLWMBUS,rtlwmbus)     \
+    X(SILABS,silabs)         \
     X(SIMULATION,simulation)
 
 enum WMBusDeviceType {
@@ -571,6 +572,8 @@ shared_ptr<WMBus> openD1TC(string device, shared_ptr<SerialCommunicationManager>
                            shared_ptr<SerialDevice> serial_override);
 shared_ptr<WMBus> openWMB13U(string device, shared_ptr<SerialCommunicationManager> manager,
                              shared_ptr<SerialDevice> serial_override);
+shared_ptr<WMBus> openSilabs(string device, int baudrate, shared_ptr<SerialCommunicationManager> manager,
+                             shared_ptr<SerialDevice> serial_override);
 shared_ptr<WMBus> openSimulator(string file, shared_ptr<SerialCommunicationManager> manager,
                                 shared_ptr<SerialDevice> serial_override);
 
@@ -634,6 +637,7 @@ AccessCheck detectRAWTTY(Detected *detected, shared_ptr<SerialCommunicationManag
 AccessCheck detectRC1180(Detected *detected, shared_ptr<SerialCommunicationManager> handler);
 AccessCheck detectRTL433(Detected *detected, shared_ptr<SerialCommunicationManager> handler);
 AccessCheck detectRTLWMBUS(Detected *detected, shared_ptr<SerialCommunicationManager> handler);
+AccessCheck detectSILABS(Detected *detected, shared_ptr<SerialCommunicationManager> handler);
 AccessCheck detectWMB13U(Detected *detected, shared_ptr<SerialCommunicationManager> handler);
 
 // Try to factory reset an AMB8465 by trying all possible serial speeds and

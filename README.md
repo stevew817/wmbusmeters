@@ -230,6 +230,7 @@ CUL family (cul)
 Radiocraft (RC1180) work in progress only T1 mode
 rtl_wmbus (rtlwmbus)
 rtl_433 (rtl433)
+Silicon Labs wmbus collector app (silabs)
 
 Supported water meters:
 Apator at-wmbus-08   (apator08) (non-standard protocol)

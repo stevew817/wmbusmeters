@@ -160,6 +160,7 @@ METER_OBJS:=\
 	$(BUILD)/wmbus_cul.o \
 	$(BUILD)/wmbus_rtlwmbus.o \
 	$(BUILD)/wmbus_rtl433.o \
+	$(BUILD)/wmbus_silabs.o \
 	$(BUILD)/wmbus_simulator.o \
 	$(BUILD)/wmbus_rawtty.o \
 	$(BUILD)/wmbus_rc1180.o \
