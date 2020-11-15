@@ -33,8 +33,6 @@
 #include <unistd.h>
 #include <algorithm>
 
-using namespace std;
-
 struct WMBusSilabs : public virtual WMBusCommonImplementation
 {
     bool ping();
