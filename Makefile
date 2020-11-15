@@ -166,7 +166,7 @@ METER_OBJS:=\
 	$(BUILD)/wmbus_rc1180.o \
 	$(BUILD)/wmbus_utils.o
 
-all: $(BUILD)/wmbusmeters $(BUILD)/wmbusmeters-admin $(BUILD)/testinternals
+all: $(BUILD)/wmbusmeters $(BUILD)/testinternals
 	@$(STRIP_BINARY)
 	@cp $(BUILD)/wmbusmeters $(BUILD)/wmbusmetersd
 
