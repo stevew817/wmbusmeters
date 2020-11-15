@@ -147,7 +147,6 @@ METER_OBJS:=\
 	$(BUILD)/meter_vario451.o \
 	$(BUILD)/meter_waterstarm.o \
 	$(BUILD)/printer.o \
-	$(BUILD)/rtlsdr.o \
 	$(BUILD)/serial.o \
 	$(BUILD)/shell.o \
 	$(BUILD)/sha256.o \
@@ -166,7 +165,7 @@ METER_OBJS:=\
 	$(BUILD)/wmbus_rc1180.o \
 	$(BUILD)/wmbus_utils.o
 
-all: $(BUILD)/wmbusmeters $(BUILD)/testinternals
+all: $(BUILD)/wmbusmeters
 	@$(STRIP_BINARY)
 	@cp $(BUILD)/wmbusmeters $(BUILD)/wmbusmetersd
 
@@ -199,7 +198,7 @@ snapcraft:
 $(BUILD)/main.o: $(BUILD)/short_manual.h $(BUILD)/version.h
 
 $(BUILD)/wmbusmeters: $(METER_OBJS) $(BUILD)/main.o $(BUILD)/short_manual.h
-	$(CXX) -o $(BUILD)/wmbusmeters $(METER_OBJS) $(BUILD)/main.o $(LDFLAGS) -lrtlsdr -lusb-1.0 -lpthread
+	$(CXX) -o $(BUILD)/wmbusmeters $(METER_OBJS) $(BUILD)/main.o $(LDFLAGS) -lpthread
 
 $(BUILD)/wmbusmeters-admin: $(METER_OBJS) $(BUILD)/admin.o $(BUILD)/ui.o $(BUILD)/short_manual.h
 	$(CXX) -o $(BUILD)/wmbusmeters-admin $(METER_OBJS) $(BUILD)/admin.o $(BUILD)/ui.o $(LDFLAGS) -lmenu -lform -lncurses -lrtlsdr -lusb-1.0 -lpthread

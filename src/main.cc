@@ -343,6 +343,7 @@ shared_ptr<WMBus> create_wmbus_object(Detected *detected, Configuration *config,
         break;
     case DEVICE_RTLWMBUS:
     {
+        /*
         string command;
         string identifier = detected->found_device_id;
         int id = 0;
@@ -391,9 +392,18 @@ shared_ptr<WMBus> create_wmbus_object(Detected *detected, Configuration *config,
                              },
                              serial_override);
         break;
+        */
+        warning("(main) internal error! Build without RTLSDR!\n");
+        if (config->daemon) {
+            // If starting as a daemon, wait a bit so that systemd have time to catch up.
+            sleep(1);
+        }
+        exit(1);
+        break;
     }
     case DEVICE_RTL433:
     {
+        /*
         string command;
         string identifier = detected->found_file;
         int id = 0;
@@ -434,6 +444,14 @@ shared_ptr<WMBus> create_wmbus_object(Detected *detected, Configuration *config,
                                          "Command was: \"%s\"\n", command.c_str());
                              },
                              serial_override);
+        break;
+        */
+        warning("(main) internal error! Build without RTLSDR!\n");
+        if (config->daemon) {
+            // If starting as a daemon, wait a bit so that systemd have time to catch up.
+            sleep(1);
+        }
+        exit(1);
         break;
     }
     case DEVICE_CUL:
@@ -847,7 +865,7 @@ void open_wmbus_device_and_set_linkmodes(Configuration *config, string how, Dete
 void perform_auto_scan_of_devices(Configuration *config)
 {
     perform_auto_scan_of_serial_devices(config);
-    perform_auto_scan_of_swradio_devices(config);
+    //perform_auto_scan_of_swradio_devices(config);
 }
 
 void perform_auto_scan_of_serial_devices(Configuration *config)
@@ -893,6 +911,7 @@ void perform_auto_scan_of_serial_devices(Configuration *config)
 
 void perform_auto_scan_of_swradio_devices(Configuration *config)
 {
+    /*
     // Enumerate all swradio devices, that can be used.
     vector<string> serialnrs = listRtlSdrDevices();
 
@@ -929,6 +948,8 @@ void perform_auto_scan_of_swradio_devices(Configuration *config)
             }
         }
     }
+    */
+    return;
 }
 
 time_t last_info_print_ = 0;
