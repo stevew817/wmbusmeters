@@ -31,6 +31,7 @@
 #include <semaphore.h>
 #include <errno.h>
 #include <unistd.h>
+#include <algorithm>
 
 using namespace std;
 
