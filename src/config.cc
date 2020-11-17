@@ -67,7 +67,16 @@ void parseMeterConfig(Configuration *c, vector<char> &buf, string file)
         // If the key starts with # then the line is a comment. Ignore it.
         if (p.first.length() > 0 && p.first[0] == '#') continue;
 
-        if (p.first == "name") name = p.second;
+        if (p.first == "name")
+        {
+            if (name.find(":") != string::npos)
+            {
+                // Oups, names are not allowed to contain the :
+                warning("Found invalid meter name \"%s\" in meter config file, must not contain a ':', skipping meter.\n", name.c_str());
+                return;
+            }
+            name = p.second;
+        }
         else
         if (p.first == "type") type = p.second;
         else
@@ -167,7 +176,7 @@ void handleLoglevel(Configuration *c, string loglevel)
         // Kick in trace immediately.
         traceEnabled(c->trace);
     }
-    else if (loglevel == "silent") { c->silence = true; }
+    else if (loglevel == "silent") { c->silent = true; }
     else if (loglevel == "normal") { }
     else {
         warning("No such log level: \"%s\"\n", loglevel.c_str());
@@ -224,35 +233,35 @@ bool handleDevice(Configuration *c, string devicefile)
 {
     SpecifiedDevice specified_device;
     bool ok = specified_device.parse(devicefile);
+    if (!ok && SpecifiedDevice::isLikelyDevice(devicefile))
+    {
+        error("Not a valid device \"%s\"\n", devicefile.c_str());
+    }
+
     if (ok)
     {
         // Number the devices
         specified_device.index = c->supplied_wmbus_devices.size();
 
-        if (specified_device.linkmodes != "")
-        {
-            // Prevent an early warning in start
-            // since we at least have one configured linkmode.
-            c->linkmodes_configured = true;
-            c->linkmodes.unionLinkModeSet(parseLinkModes(specified_device.linkmodes));
-        }
-        else
+        if (specified_device.linkmodes.empty())
         {
             // No linkmode set, but if simulation, stdin and file,
             // then assume that it will produce telegrams on all linkmodes.
             if (specified_device.is_simulation || specified_device.is_stdin || specified_device.is_file)
             {
-                c->linkmodes_configured = true;
-                c->linkmodes.unionLinkModeSet(LinkModeBits::Any_bit);
+                // Essentially link mode calculations are now irrelevant.
+                specified_device.linkmodes.addLinkMode(LinkMode::Any);
             }
-
-            if (specified_device.type == "rtlwmbus")
+            else
+            if (specified_device.type == WMBusDeviceType::DEVICE_RTLWMBUS ||
+                specified_device.type == WMBusDeviceType::DEVICE_RTL433)
             {
-                c->linkmodes_configured = true;
-                c->linkmodes.addLinkMode(LinkMode::C1);
-                c->linkmodes.addLinkMode(LinkMode::T1);
+                c->all_device_linkmodes_specified.addLinkMode(LinkMode::C1);
+                c->all_device_linkmodes_specified.addLinkMode(LinkMode::T1);
             }
         }
+
+        c->all_device_linkmodes_specified.unionLinkModeSet(specified_device.linkmodes);
 
         if (specified_device.is_stdin ||
             specified_device.is_file ||
@@ -263,16 +272,19 @@ bool handleDevice(Configuration *c, string devicefile)
             {
                 error("You can only specify one stdin or one file or one command!\n");
             }
-            if (c->use_auto_detect)
+            if (c->use_auto_device_detect)
             {
                 error("You cannot mix auto with stdin or a file.\n");
             }
             if (specified_device.is_simulation) c->simulation_found = true;
             c->single_device_override = true;
         }
-        if (specified_device.type == "auto")
+
+        if (specified_device.type == WMBusDeviceType::DEVICE_AUTO)
         {
-            c->use_auto_detect = true;
+            c->use_auto_device_detect = true;
+            c->auto_device_linkmodes = specified_device.linkmodes;
+
 #if defined(__APPLE__) && defined(__MACH__)
             error("You cannot use auto on macosx. You must specify the device tty or rtlwmbus.\n");
 #endif
@@ -285,20 +297,25 @@ bool handleDevice(Configuration *c, string devicefile)
     return ok;
 }
 
+bool handleDoNotProbe(Configuration *c, string devicefile)
+{
+    c->do_not_probe_ttys.insert(devicefile);
+    return true;
+}
+
 void handleListenTo(Configuration *c, string mode)
 {
     LinkModeSet lms = parseLinkModes(mode.c_str());
-    if (lms.bits() == 0)
+    if (lms.empty())
     {
-        error("Unknown link mode \"%s\"!\n", mode.c_str());
+        error("Unknown link modes \"%s\"!\n", mode.c_str());
     }
-    if (c->linkmodes_configured)
+    if (!c->default_device_linkmodes.empty())
     {
-        error("You have already specified a link mode!\n");
+        error("You have already specified the default link modes!\n");
     }
 
-    c->linkmodes = lms;
-    c->linkmodes_configured = true;
+    c->default_device_linkmodes = lms;
 }
 
 void handleLogtelegrams(Configuration *c, string logtelegrams)
@@ -524,6 +541,7 @@ shared_ptr<Configuration> loadConfiguration(string root, string device_override,
         else if (p.first == "internaltesting") handleInternalTesting(c, p.second);
         else if (p.first == "ignoreduplicates") handleIgnoreDuplicateTelegrams(c, p.second);
         else if (p.first == "device") handleDevice(c, p.second);
+        else if (p.first == "donotprobe") handleDoNotProbe(c, p.second);
         else if (p.first == "listento") handleListenTo(c, p.second);
         else if (p.first == "logtelegrams") handleLogtelegrams(c, p.second);
         else if (p.first == "meterfiles") handleMeterfiles(c, p.second);
@@ -602,45 +620,21 @@ LinkModeCalculationResult calculateLinkModes(Configuration *config, WMBus *wmbus
     }
     string metersu = meters_union.hr();
     debug("(config) all possible link modes that the meters might transmit on: %s\n", metersu.c_str());
-    if (meters_union.bits() == 0)
+    if (meters_union.empty())
     {
-        if (link_modes_matter && !config->linkmodes_configured)
+        if (link_modes_matter && config->all_device_linkmodes_specified.empty())
         {
             string msg;
-            strprintf(msg,"(config) No meters supplied. You must supply which link modes to listen to. Eg. --listento=<modes>");
+            strprintf(msg,"(config) No meters supplied. You must supply which link modes to listen to. 22 Eg. auto:t1");
             debug("%s\n", msg.c_str());
             return { LinkModeCalculationResultType::NoMetersMustSupplyModes , msg};
         }
         return { LinkModeCalculationResultType::Success, "" };
     }
-    if (!config->linkmodes_configured)
-    {
-        // A listen_to link mode has not been set explicitly. Pick a listen_to link
-        // mode that is supported by the wmbus dongle and works for the meters.
-        config->linkmodes = wmbus->supportedLinkModes();
-        config->linkmodes.disjunctionLinkModeSet(meters_union);
-        if (!wmbus->canSetLinkModes(config->linkmodes))
-        {
-            // The automatically calculated link modes cannot be set in the dongle.
-            // Ie the dongle needs help....
-            string msg;
-            strprintf(msg,"(config) Automatic deduction of which link mode to listen to failed since the meters might transmit using: %s\n"
-                      "(config) But the dongle can only listen to: %s Please supply the exact link mode(s) to listen to, eg: --listento=<mode>\n"
-                      "(config) and/or specify the expected transmit modes for the meters, eg: apator162:t1\n"
-                      "(config) or use a dongle that can listen to all the required link modes at the same time.",
-                      metersu.c_str(), dongle.c_str());
+    string all_lms = config->all_device_linkmodes_specified.hr();
+    verbose("(config) all specified link modes: %s\n", all_lms.c_str());
 
-            debug("%s\n", msg.c_str());
-            return { LinkModeCalculationResultType::AutomaticDeductionFailed , msg};
-        }
-        config->linkmodes_configured = true;
-    }
-    else
-    {
-        string listen = config->linkmodes.hr();
-        debug("(config) explicitly listening to: %s\n", listen.c_str());
-    }
-
+    /*
     string listen = config->linkmodes.hr();
     if (!wmbus->canSetLinkModes(config->linkmodes))
     {
@@ -650,19 +644,28 @@ LinkModeCalculationResult calculateLinkModes(Configuration *config, WMBus *wmbus
         debug("%s\n", msg.c_str());
         return { LinkModeCalculationResultType::DongleCannotListenTo , msg};
     }
-
-    if (!config->linkmodes.hasAll(meters_union))
+    */
+    /*
+    string listen = config->linkmodes.hr();
+    if (!wmbus->canSetLinkModes(config->linkmodes))
+    {
+        string msg;
+        strprintf(msg, "(config) You have specified to listen to the link modes: %s but the dongle can only listen to: %s",
+                  listen.c_str(), dongle.c_str());
+        debug("%s\n", msg.c_str());
+        return { LinkModeCalculationResultType::DongleCannotListenTo , msg};
+    }
+    */
+    if (!config->all_device_linkmodes_specified.hasAll(meters_union))
     {
         string msg;
         strprintf(msg, "(config) You have specified to listen to the link modes: %s but the meters might transmit on: %s\n"
                   "(config) Therefore you might miss telegrams! Please specify the expected transmit mode for the meters, eg: apator162:t1\n"
                   "(config) Or use a dongle that can listen to all the required link modes at the same time.",
-                  listen.c_str(), metersu.c_str());
+                  all_lms.c_str(), metersu.c_str());
         debug("%s\n", msg.c_str());
         return { LinkModeCalculationResultType::MightMissTelegrams, msg};
     }
-
-    debug("(config) listen link modes calculated to be: %s\n", listen.c_str());
 
     return { LinkModeCalculationResultType::Success, "" };
 }

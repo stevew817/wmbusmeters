@@ -30,6 +30,11 @@ Received telegram from: 11111111
                   type: Water meter (0x07)
                    ver: 0x3c
                 driver: supercom587
+Received telegram from: 27282728
+          manufacturer: (SON) Sontex, Switzerland (0x4dee)
+                  type: Heat Cost Allocator (0x08)
+                   ver: 0x16
+                driver: sontex868
 Received telegram from: 12345699
           manufacturer: (SEN) Sensus Metering Systems, Germany (0x4cae)
                   type: Water meter (0x07)
@@ -170,6 +175,26 @@ Received telegram from: 78563412
                   type: Water meter (0x07)
                    ver: 0xf1
                 driver: topaseskr
+Received telegram from: 95969798
+          manufacturer: (APA) Apator, Poland (0x601)
+                  type: Cold water meter (0x16)
+                   ver: 0x01
+                driver: ultrimis
+Received telegram from: 12345679
+          manufacturer: (EFE) Engelmann Sensor, Germany (0x14c5)
+                  type: Heat meter (0x04)
+                   ver: 0x00
+                driver: sensostar
+Received telegram from: 99993030
+          manufacturer: (ELR) Elster Metering, United Kingdom (0x1592)
+                  type: Water meter (0x07)
+                   ver: 0x0d
+                driver: ev200
+Received telegram from: 95949392
+          manufacturer: (ELR) Elster Metering, United Kingdom (0x1592)
+                  type: Radio converter (meter side) (0x37)
+                   ver: 0x11
+                driver: emerlin868
 EOF
 
 RES=$($PROG --logfile=$LOGFILE --t1 simulations/simulation_t1.txt 2>&1)

@@ -51,6 +51,9 @@ if [ "$?" != "0" ]; then RC="1"; fi
 tests/test_listen_to_all.sh $PROG
 if [ "$?" != "0" ]; then RC="1"; fi
 
+tests/test_driver_detection.sh $PROG
+if [ "$?" != "0" ]; then RC="1"; fi
+
 tests/test_multiple_ids.sh $PROG
 if [ "$?" != "0" ]; then RC="1"; fi
 
@@ -87,10 +90,20 @@ if [ "$?" != "0" ]; then RC="1"; fi
 tests/test_ignore_duplicates.sh $PROG
 if [ "$?" != "0" ]; then RC="1"; fi
 
+tests/test_pipe.sh $PROG
+if [ "$?" != "0" ]; then RC="1"; fi
+
 if [ "$(uname)" = "Linux" ]
 then
     tests/test_alarm.sh $PROG
     if [ "$?" != "0" ]; then RC="1"; fi
+fi
+
+if [ "$RC" = "0" ]
+then
+    echo "All tests ok!"
+else
+    echo "Some tests failed!"
 fi
 
 exit $RC

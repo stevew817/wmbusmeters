@@ -54,11 +54,11 @@ struct WMBusCUL : public virtual WMBusCommonImplementation
     int numConcurrentLinkModes() { return 1; }
     bool canSetLinkModes(LinkModeSet lms)
     {
-        if (0 == countSetBits(lms.bits())) return false;
+        if (lms.empty()) return false;
         if (!supportedLinkModes().supports(lms)) return false;
         // Ok, the supplied link modes are compatible,
         // but im871a can only listen to one at a time.
-        return 1 == countSetBits(lms.bits());
+        return 1 == countSetBits(lms.asBits());
     }
     void processSerialData();
     void simulate();
@@ -86,6 +86,7 @@ shared_ptr<WMBus> openCUL(string device, shared_ptr<SerialCommunicationManager> 
     if (serial_override)
     {
         WMBusCUL *imp = new WMBusCUL(serial_override, manager);
+        imp->markAsNoLongerSerial();
         return shared_ptr<WMBus>(imp);
     }
 
@@ -95,7 +96,7 @@ shared_ptr<WMBus> openCUL(string device, shared_ptr<SerialCommunicationManager> 
 }
 
 WMBusCUL::WMBusCUL(shared_ptr<SerialDevice> serial, shared_ptr<SerialCommunicationManager> manager) :
-    WMBusCommonImplementation(DEVICE_CUL, manager, serial)
+    WMBusCommonImplementation(DEVICE_CUL, manager, serial, true)
 {
     reset();
 }
@@ -249,7 +250,8 @@ void WMBusCUL::processSerialData()
         {
             read_buffer_.erase(read_buffer_.begin(), read_buffer_.begin()+frame_length);
 
-            AboutTelegram about("", 0);
+            // We do not currently know how to get the rssi out of the cul dongle.
+            AboutTelegram about("cul", 0);
             handleTelegram(about, payload);
         }
     }
@@ -373,8 +375,8 @@ AccessCheck detectCUL(Detected *detected, shared_ptr<SerialCommunicationManager>
         // Wait for 200ms so that the USB stick have time to prepare a response.
         usleep(1000*200);
         serial->receive(&data);
-        string resp(data.begin(), data.end());
-        debug("(cul) response \"%s\"\n", resp.c_str());
+        string resp = safeString(data);
+        debug("(cul) probe response \"%s\"\n", resp.c_str());
         if (resp.find("CUL") != string::npos)
         {
             found = true;
@@ -383,11 +385,14 @@ AccessCheck detectCUL(Detected *detected, shared_ptr<SerialCommunicationManager>
         usleep(1000*500);
     }
 
-    if (!found) return AccessCheck::NotThere;
-
     serial->close();
 
-    detected->setAsFound("", WMBusDeviceType::DEVICE_CUL, 38400, false, false);
+    if (!found)
+    {
+        return AccessCheck::NotThere;
+    }
+
+    detected->setAsFound("", WMBusDeviceType::DEVICE_CUL, 38400, false, false, detected->specified_device.linkmodes);
 
     return AccessCheck::AccessOK;
 }

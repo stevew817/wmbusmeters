@@ -278,7 +278,7 @@ string format3fdot3f(double v)
 
 bool syslog_enabled_ = false;
 bool logfile_enabled_ = false;
-bool warning_enabled_ = true;
+bool logging_silenced_ = false;
 bool verbose_enabled_ = false;
 bool debug_enabled_ = false;
 bool trace_enabled_ = false;
@@ -288,8 +288,8 @@ bool internal_testing_enabled_ = false;
 
 string log_file_;
 
-void warningSilenced(bool b) {
-    warning_enabled_ = !b;
+void silentLogging(bool b) {
+    logging_silenced_ = b;
 }
 
 void enableSyslog() {
@@ -418,21 +418,25 @@ void outputStuff(int syslog_level, const char *fmt, va_list args)
 }
 
 void info(const char* fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    outputStuff(LOG_INFO, fmt, args);
-    va_end(args);
+    if (!logging_silenced_) {
+        va_list args;
+        va_start(args, fmt);
+        outputStuff(LOG_INFO, fmt, args);
+        va_end(args);
+    }
 }
 
 void notice(const char* fmt, ...) {
-    va_list args;
-    va_start(args, fmt);
-    outputStuff(LOG_NOTICE, fmt, args);
-    va_end(args);
+    if (!logging_silenced_) {
+        va_list args;
+        va_start(args, fmt);
+        outputStuff(LOG_NOTICE, fmt, args);
+        va_end(args);
+    }
 }
 
 void warning(const char* fmt, ...) {
-    if (warning_enabled_) {
+    if (!logging_silenced_) {
         va_list args;
         va_start(args, fmt);
         outputStuff(LOG_WARNING, fmt, args);
@@ -811,7 +815,7 @@ void debugPayload(string intro, vector<uchar> &payload, vector<uchar>::iterator 
     }
 }
 
-void logTelegram(string intro, vector<uchar> &parsed, int header_size, int suffix_size)
+void logTelegram(vector<uchar> &parsed, int header_size, int suffix_size)
 {
     if (isLogTelegramsEnabled())
     {
@@ -821,7 +825,7 @@ void logTelegram(string intro, vector<uchar> &parsed, int header_size, int suffi
         string content = parsed_hex.substr(header_size*2);
         if (suffix_size == 0)
         {
-            notice("%s \"telegram=|%s|%s|+%ld\"\n", intro.c_str(),
+            notice("telegram=|%s|%s|+%ld\n",
                    header.c_str(), content.c_str(), diff);
         }
         else
@@ -829,7 +833,7 @@ void logTelegram(string intro, vector<uchar> &parsed, int header_size, int suffi
             assert((suffix_size*2) < (int)content.size());
             string content2 = content.substr(0, content.size()-suffix_size*2);
             string suffix = content.substr(content.size()-suffix_size*2);
-            notice("%s \"telegram=|%s|%s|%s|+%ld\"\n", intro.c_str(),
+            notice("telegram=|%s|%s|%s|+%ld\n",
                    header.c_str(), content2.c_str(), suffix.c_str(), diff);
         }
     }
@@ -1460,7 +1464,7 @@ void logAlarm(Alarm type, string info)
     string ts = toString(type);
     envs.push_back("ALARM_TYPE="+ts);
 
-    string msg = tostrprintf("(alarm %s) %s", ts.c_str(), info.c_str());
+    string msg = tostrprintf("[ALARM %s] %s", ts.c_str(), info.c_str());
     envs.push_back("ALARM_MESSAGE="+msg);
 
     warning("%s\n", msg.c_str());

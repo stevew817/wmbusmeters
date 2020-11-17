@@ -73,8 +73,8 @@ shared_ptr<Configuration> parseCommandLine(int argc, char **argv) {
             c->need_help = true;
             return shared_ptr<Configuration>(c);
         }
-        if (!strcmp(argv[i], "--silence")) {
-            c->silence = true;
+        if (!strcmp(argv[i], "--silent")) {
+            c->silent = true;
             i++;
             continue;
         }
@@ -107,27 +107,37 @@ shared_ptr<Configuration> parseCommandLine(int argc, char **argv) {
             i++;
             continue;
         }
-        if (!strncmp(argv[i], "--listento=", 11)) {
+        if (!strncmp(argv[i], "--donotprobe=", 13))
+        {
+            string df = string(argv[i]+13);
+            debug("(cmdline) do not probe \"%s\"\n", df.c_str());
+            c->do_not_probe_ttys.insert(df);
+            i++;
+            continue;
+        }
+        if (!strncmp(argv[i], "--listento=", 11))
+        {
             LinkModeSet lms = parseLinkModes(argv[i]+11);
-            if (lms.bits() == 0) {
-                error("Unknown link mode \"%s\"!\n", argv[i]+11);
+            if (lms.empty())
+            {
+                error("Unknown default link mode \"%s\"!\n", argv[i]+11);
             }
-            if (c->linkmodes_configured) {
-                error("You have already specified a link mode!\n");
+            if (!c->default_device_linkmodes.empty()) {
+                error("You have already specified a default link mode!\n");
             }
-            c->linkmodes = lms;
-            c->linkmodes_configured = true;
+            c->default_device_linkmodes = lms;
             i++;
             continue;
         }
 
         LinkMode lm = isLinkModeOption(argv[i]);
         if (lm != LinkMode::UNKNOWN) {
-            if (c->linkmodes_configured) {
-                error("You have already specified a link mode!\n");
+            if (!c->default_device_linkmodes.empty())
+            {
+                error("You have already specified a default link mode!\n");
             }
-            c->linkmodes.addLinkMode(lm);
-            c->linkmodes_configured = true;
+            // Add to the empty set.
+            c->default_device_linkmodes.addLinkMode(lm);
             i++;
             continue;
         }
@@ -434,6 +444,11 @@ shared_ptr<Configuration> parseCommandLine(int argc, char **argv) {
             i++;
             continue;
         }
+        if (!strcmp(argv[i], "--nodeviceexit")) {
+            c->nodeviceexit = true;
+            i++;
+            continue;
+        }
         if (!strncmp(argv[i], "--resetafter=", 13) && strlen(argv[i]) > 13) {
             c->resetafter = parseTime(argv[i]+13);
             if (c->resetafter <= 0) {
@@ -471,12 +486,23 @@ shared_ptr<Configuration> parseCommandLine(int argc, char **argv) {
     while (argv[i])
     {
         bool ok = handleDevice(c, argv[i]);
-        if (!ok) break;
+        if (!ok)
+        {
+            if (!argv[i+1])
+            {
+                // This was the last argument on the commandline.
+                // It should have been a device or a file.
+                error("Not a valid device \"%s\"\n", argv[i]);
+            }
+            // There are more arguments...
+            break;
+        }
         i++;
     }
 
+
     if (c->supplied_wmbus_devices.size() == 0 &&
-        c->use_auto_detect == false &&
+        c->use_auto_device_detect == false &&
         !c->list_shell_envs &&
         !c->list_fields &&
         !c->list_meters)

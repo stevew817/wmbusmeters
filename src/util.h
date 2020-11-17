@@ -72,7 +72,7 @@ void warning(const char* fmt, ...);
 void info(const char* fmt, ...);
 void notice(const char* fmt, ...);
 
-void warningSilenced(bool b);
+void silentLogging(bool b);
 void verboseEnabled(bool b);
 void debugEnabled(bool b);
 void traceEnabled(bool b);
@@ -87,7 +87,7 @@ bool isLogTelegramsEnabled();
 
 void debugPayload(std::string intro, std::vector<uchar> &payload);
 void debugPayload(std::string intro, std::vector<uchar> &payload, std::vector<uchar>::iterator &pos);
-void logTelegram(std::string intro, std::vector<uchar> &parsed, int header_size, int suffix_size);
+void logTelegram(std::vector<uchar> &parsed, int header_size, int suffix_size);
 
 enum class Alarm
 {

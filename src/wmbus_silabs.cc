@@ -76,9 +76,12 @@ shared_ptr<WMBus> openSilabs(string device, int baudrate, shared_ptr<SerialCommu
 }
 
 WMBusSilabs::WMBusSilabs(shared_ptr<SerialDevice> serial, shared_ptr<SerialCommunicationManager> manager) :
-    WMBusCommonImplementation(DEVICE_SILABS, manager, serial)
+    WMBusCommonImplementation(DEVICE_SILABS, manager, serial, true)
 {
     reset();
+    link_modes_ = LinkModeSet();
+    link_modes_.addLinkMode(LinkMode::T1);
+    link_modes_.addLinkMode(LinkMode::C1);
 }
 
 bool WMBusSilabs::ping()
@@ -285,7 +288,10 @@ AccessCheck detectSILABS(Detected *detected, shared_ptr<SerialCommunicationManag
 
     serial->close();
 
-    detected->setAsFound("silabs", WMBusDeviceType::DEVICE_SILABS, bps, false, false);
+    LinkModeSet clm;
+    clm.addLinkMode(LinkMode::T1);
+    clm.addLinkMode(LinkMode::C1);
+    detected->setAsFound("silabs", WMBusDeviceType::DEVICE_SILABS, bps, false, false, clm);
 
     return AccessCheck::AccessOK;
 }

@@ -31,9 +31,13 @@ mqtt_publish) sent to a REST API (eg curl) or store it in a database
 
 \fB\--debug\fR for a lot of information
 
+\fB\--donotprobe=\fR<tty> do not auto-probe this tty. Use multiple times for several ttys or specify "all" for all ttys.
+
 \fB\--exitafter=\fR<time> exit program after time, eg 20h, 10m 5s
 
 \fB\--format=\fR(hr|json|fields) for human readable, json or semicolon separated fields
+
+\fB\--ignoreduplicates\fR ignore telegram duplicates (when using multiple receiving dongles or repeaters)
 
 \fB\--json_xxx=yyy\fR always add "xxx"="yyy" to the json output and add shell env METER_xxx=yyy
 
@@ -65,6 +69,8 @@ mqtt_publish) sent to a REST API (eg curl) or store it in a database
 
 \fB\--meterfilestimestamp=\fR(never|day|hour|minute|micros) the meter file is suffixed with a timestamp (localtime) with the given resolution.
 
+\fB\--nodeviceexit\fR if no wmbus devices are found, then exit immediately
+
 \fB\--oneshot\fR wait for an update from each meter, then quit
 
 \fB\--resetafter=\fR<time> reset the wmbus dongle regularly, default is 24h
@@ -76,6 +82,8 @@ mqtt_publish) sent to a REST API (eg curl) or store it in a database
 \fB\--separator=\fR<c> change field separator to c
 
 \fB\--shell=\fR<cmdline> invokes cmdline with env variables containing the latest reading
+
+\fB\--silent\fR do not print informational messages nor warnings
 
 \fB\--useconfig=\fR<dir> load config files from dir/etc
 
@@ -96,9 +104,6 @@ mqtt_publish) sent to a REST API (eg curl) or store it in a database
 \fBim871a[12345678]:t1\fR look for the im871a dongle with this particular id.
 
 .TP
-\fB/dev/ttyUSB0:9600\fR read serial data from tty at 9600 bps, expects raw wmbus frames with the DLL crcs removed.
-
-.TP
 \fB/dev/ttyUSB0:amb8465:c1,t1\fR expect an amb8465 on this tty.
 
 .TP
@@ -107,6 +112,9 @@ mqtt_publish) sent to a REST API (eg curl) or store it in a database
 .TP
 \fBrtlwmbus[alfa]:433M:c1,t1 rtlwmbus[beta]:868.9M:c1,t1\fR Use two rtlsdr dongles, one has its id set to alfa (using rtl_eeprom)
 and the other set to beta. Alfa has an antenna tuned for 433M, beta has an antenna suitable for 868.9M.
+
+.TP
+\fB/dev/ttyUSB0:9600\fR read serial data from tty at 9600 bps, expects raw wmbus frames with the DLL crcs removed.
 
 .TP
 \fBstdin:rtlwmbus\fR read rtlwmbus formatted data from stdin.
@@ -175,13 +183,17 @@ loglevel=normal
 device=im871a[12345678]:c1
 device=rtlwmbus:433M:c1,t1
 logtelegrams=false
+format=json
 meterfiles=/var/log/wmbusmeters/meter_readings
 meterfilesaction=overwrite
+meterfilesnaming=name
+meterfilestimestamp=day
 logfile=/var/log/wmbusmeters/wmbusmeters.log
 shell=/usr/bin/mosquitto_pub -h localhost -t "wmbusmeters/$METER_ID" -m "$METER_JSON"
 alarmshell=/usr/bin/mosquitto_pub -h localhost -t wmbusmeters_alarm -m "$ALARM_TYPE $ALARM_MESSAGE"
 alarmtimeout=1h
 alarmexpectedactivity=mon-sun(00-23)
+ignoreduplicates=false
 json_address=MyStreet 5
 .fi
 

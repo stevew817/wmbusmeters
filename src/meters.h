@@ -27,42 +27,47 @@
 #include<vector>
 
 #define LIST_OF_METERS \
-    X(amiplus,    T1_bit, Electricity, AMIPLUS,     Amiplus)      \
-    X(apator08,   T1_bit,        Water,       APATOR08,    Apator08)    \
-    X(apator162,  C1_bit|T1_bit, Water,       APATOR162,   Apator162)   \
-    X(cma12w,     C1_bit|T1_bit, TempHygro,   CMA12W,      CMa12w)      \
-    X(compact5,   T1_bit, Heat,        COMPACT5,    Compact5)     \
-    X(ebzwmbe,    T1_bit, Electricity, EBZWMBE, EBZWMBE)   \
-    X(eurisii,    T1_bit, HeatCostAllocation, EURISII, EurisII)   \
-    X(ehzp,       T1_bit, Electricity, EHZP,        EHZP)         \
-    X(esyswm,     T1_bit, Electricity, ESYSWM,      ESYSWM)       \
-    X(flowiq2200, C1_bit, Water,       FLOWIQ2200,  FlowIQ2200)   \
-    X(flowiq3100, C1_bit, Water,       FLOWIQ3100,  FlowIQ3100)   \
-    X(em24,       C1_bit, Electricity, EM24,        EM24)         \
-    X(fhkvdataiii,   T1_bit, HeatCostAllocation,        FHKVDATAIII,    FHKVDataIII)     \
-    X(hydrus,     T1_bit, Water,       HYDRUS,      Hydrus)       \
-    X(hydrodigit, T1_bit, Water,       HYDRODIGIT,  Hydrodigit)   \
-    X(iperl,      T1_bit, Water,       IPERL,       Iperl)        \
-    X(izar,       T1_bit, Water,       IZAR,        Izar)         \
-    X(izar3,      T1_bit, Water,       IZAR3,       Izar3)        \
-    X(lansensm,   T1_bit, Smoke,       LANSENSM,    LansenSM)     \
-    X(lansenth,   T1_bit, TempHygro,   LANSENTH,    LansenTH)     \
-    X(lansendw,   T1_bit, DoorWindow,  LANSENDW,    LansenDW)     \
-    X(lansenpu,   T1_bit, Pulse,       LANSENPU,    LansenPU)     \
-    X(mkradio3,   T1_bit, Water,       MKRADIO3,    MKRadio3)     \
-    X(multical21, C1_bit|T1_bit, Water,       MULTICAL21,  Multical21)   \
-    X(multical302,C1_bit, Heat,        MULTICAL302, Multical302)  \
-    X(multical403,C1_bit, Heat,        MULTICAL403, Multical403)  \
-    X(multical603,C1_bit, Heat,        MULTICAL603, Multical603)  \
-    X(omnipower,  C1_bit, Electricity, OMNIPOWER,   Omnipower)    \
-    X(rfmamb,     T1_bit, TempHygro,   RFMAMB,      RfmAmb)       \
-    X(rfmtx1,     T1_bit, Water,       RFMTX1,      RfmTX1)       \
-    X(q400,       T1_bit, Water,       Q400,        Q400)  \
-    X(qcaloric,   C1_bit, HeatCostAllocation, QCALORIC, QCaloric) \
-    X(supercom587,T1_bit, Water,       SUPERCOM587, Supercom587)  \
-    X(vario451,   T1_bit, Heat,        VARIO451,    Vario451)     \
-    X(waterstarm, C1_bit|T1_bit, Water,WATERSTARM,  WaterstarM)   \
-    X(topaseskr, T1_bit, Water,   TOPASESKR, TopasEsKr)  \
+    X(amiplus,    T1_bit, ElectricityMeter, AMIPLUS,     Amiplus)      \
+    X(apator08,   T1_bit,        WaterMeter,       APATOR08,    Apator08)    \
+    X(apator162,  C1_bit|T1_bit, WaterMeter,       APATOR162,   Apator162)   \
+    X(cma12w,     C1_bit|T1_bit, TempHygroMeter,   CMA12W,      CMa12w)      \
+    X(compact5,   T1_bit, HeatMeter,        COMPACT5,    Compact5)     \
+    X(ebzwmbe,    T1_bit, ElectricityMeter, EBZWMBE, EBZWMBE)          \
+    X(eurisii,    T1_bit, HeatCostAllocationMeter, EURISII, EurisII)   \
+    X(ehzp,       T1_bit, ElectricityMeter, EHZP,        EHZP)         \
+    X(esyswm,     T1_bit, ElectricityMeter, ESYSWM,      ESYSWM)       \
+    X(flowiq2200, C1_bit, WaterMeter,       FLOWIQ2200,  FlowIQ2200)   \
+    X(flowiq3100, C1_bit, WaterMeter,       FLOWIQ3100,  FlowIQ3100)   \
+    X(em24,       C1_bit, ElectricityMeter, EM24,        EM24)         \
+    X(emerlin868, T1_bit, WaterMeter,       EMERLIN868,  EMerlin868)   \
+    X(ev200,      T1_bit, WaterMeter,       EV200,       EV200)        \
+    X(fhkvdataiii,   T1_bit, HeatCostAllocationMeter,        FHKVDATAIII,    FHKVDataIII)     \
+    X(hydrus,     T1_bit, WaterMeter,       HYDRUS,      Hydrus)       \
+    X(hydrodigit, T1_bit, WaterMeter,       HYDRODIGIT,  Hydrodigit)   \
+    X(iperl,      T1_bit, WaterMeter,       IPERL,       Iperl)        \
+    X(izar,       T1_bit, WaterMeter,       IZAR,        Izar)         \
+    X(izar3,      T1_bit, WaterMeter,       IZAR3,       Izar3)        \
+    X(lansensm,   T1_bit, SmokeDetector,    LANSENSM,    LansenSM)     \
+    X(lansenth,   T1_bit, TempHygroMeter,   LANSENTH,    LansenTH)     \
+    X(lansendw,   T1_bit, DoorWindowDetector,  LANSENDW,    LansenDW)     \
+    X(lansenpu,   T1_bit, PulseCounter,     LANSENPU,    LansenPU)     \
+    X(mkradio3,   T1_bit, WaterMeter,       MKRADIO3,    MKRadio3)     \
+    X(multical21, C1_bit|T1_bit, WaterMeter,       MULTICAL21,  Multical21)   \
+    X(multical302,C1_bit, HeatMeter,        MULTICAL302, Multical302)  \
+    X(multical403,C1_bit, HeatMeter,        MULTICAL403, Multical403)  \
+    X(multical603,C1_bit, HeatMeter,        MULTICAL603, Multical603)  \
+    X(omnipower,  C1_bit, ElectricityMeter, OMNIPOWER,   Omnipower)    \
+    X(rfmamb,     T1_bit, TempHygroMeter,   RFMAMB,      RfmAmb)       \
+    X(rfmtx1,     T1_bit, WaterMeter,       RFMTX1,      RfmTX1)       \
+    X(q400,       T1_bit, WaterMeter,       Q400,        Q400)         \
+    X(qcaloric,   C1_bit, HeatCostAllocationMeter, QCALORIC, QCaloric) \
+    X(sontex868,  T1_bit, HeatCostAllocationMeter, SONTEX868, Sontex868) \
+    X(supercom587,T1_bit, WaterMeter,       SUPERCOM587, Supercom587)  \
+    X(ultrimis,   T1_bit, WaterMeter,       ULTRIMIS,    Ultrimis)     \
+    X(vario451,   T1_bit, HeatMeter,        VARIO451,    Vario451)     \
+    X(waterstarm, C1_bit|T1_bit, WaterMeter,WATERSTARM,  WaterstarM)   \
+    X(topaseskr, T1_bit, WaterMeter,   TOPASESKR, TopasEsKr)  \
+    X(sensostar, C1_bit|T1_bit, HeatMeter,SENSOSTAR,  Sensostar)   \
 
 
 // List of numbers that can be used to detect the meter driver
@@ -95,10 +100,13 @@
     X(FLOWIQ2200,MANUFACTURER_KAW,  0x16,  0x3a) \
     X(FLOWIQ3100,MANUFACTURER_KAM,  0x16,  0x1d) \
     X(EM24,      MANUFACTURER_KAM,  0x02,  0x33) \
+    X(EMERLIN868,MANUFACTURER_ELR,  0x37,  0x11) \
+    X(EV200,     MANUFACTURER_ELR,  0x07,  0x0d) \
     X(FHKVDATAIII,MANUFACTURER_TCH, 0x80,  0x69) \
     X(HYDRUS,    MANUFACTURER_DME,  0x07,  0x70) \
     X(HYDRUS,    MANUFACTURER_HYD,  0x07,  0x24) \
     X(HYDRUS,    MANUFACTURER_DME,  0x06,  0x70) \
+    X(HYDRUS,    MANUFACTURER_DME,  0x16,  0x70) \
     X(HYDRODIGIT,MANUFACTURER_BMT,  0x07,  0x13) \
     X(IPERL,     MANUFACTURER_SEN,  0x06,  0x68) \
     X(IPERL,     MANUFACTURER_SEN,  0x07,  0x68) \
@@ -107,6 +115,7 @@
     X(IZAR,      MANUFACTURER_SAP,  0x15,    -1) \
     X(IZAR,      MANUFACTURER_SAP,  0x66,    -1) \
     X(IZAR,      MANUFACTURER_DME,  0x66,    -1) \
+    X(IZAR,      MANUFACTURER_DME,  0x19,  0x00) \
     X(IZAR3,     MANUFACTURER_SAP,  0x00,  0x88) \
     X(LANSENSM,  MANUFACTURER_LAS,  0x1a,  0x03) \
     X(LANSENTH,  MANUFACTURER_LAS,  0x1b,  0x07) \
@@ -131,11 +140,15 @@
     X(QCALORIC,   MANUFACTURER_QDS, 0x08,  0x35) \
     X(SUPERCOM587,MANUFACTURER_SON, 0x06,  0x3c) \
     X(SUPERCOM587,MANUFACTURER_SON, 0x07,  0x3c) \
+    X(SONTEX868,  MANUFACTURER_SON, 0x08,  0x16) \
+    X(TOPASESKR,  MANUFACTURER_AMT, 0x06,  0xf1) \
+    X(TOPASESKR,  MANUFACTURER_AMT, 0x07,  0xf1) \
+    X(ULTRIMIS,   MANUFACTURER_APA, 0x16,  0x01) \
     X(VARIO451,   MANUFACTURER_TCH, 0x04,  0x27) \
     X(VARIO451,   MANUFACTURER_TCH, 0xc3,  0x27) \
     X(WATERSTARM, MANUFACTURER_DWZ, 0x06,  0x02) \
-    X(TOPASESKR,  MANUFACTURER_AMT, 0x06,  0xf1) \
-    X(TOPASESKR,  MANUFACTURER_AMT, 0x07,  0xf1) \
+    X(WATERSTARM, MANUFACTURER_EFE, 0x07,  0x03) \
+    X(SENSOSTAR,  MANUFACTURER_EFE, 0x04,  0x00) \
 
 enum class MeterType {
 #define X(mname,linkmode,info,type,cname) type,
@@ -304,7 +317,7 @@ struct ElectricityMeter : public virtual Meter
     virtual double currentPowerProduction(Unit u); // kw
 };
 
-struct HeatCostMeter : public virtual Meter
+struct HeatCostAllocationMeter : public virtual Meter
 {
     virtual double currentConsumption(Unit u);
     virtual string setDate();
@@ -347,50 +360,17 @@ struct PulseCounter : public virtual Meter
     virtual ~PulseCounter() = default;
 };
 
-struct GenericMeter : public virtual Meter {
+struct Generic : public virtual Meter {
 };
 
 string toMeterName(MeterType mt);
 MeterType toMeterType(string& type);
 LinkModeSet toMeterLinkModeSet(string& type);
 
-shared_ptr<WaterMeter> createMultical21(MeterInfo &m);
-shared_ptr<WaterMeter> createFlowIQ2200(MeterInfo &m);
-shared_ptr<WaterMeter> createFlowIQ3100(MeterInfo &m);
-shared_ptr<HeatMeter> createMultical302(MeterInfo &m);
-shared_ptr<HeatMeter> createMultical403(MeterInfo &m);
-shared_ptr<HeatMeter> createMultical603(MeterInfo &m);
-shared_ptr<HeatMeter> createVario451(MeterInfo &m);
-shared_ptr<WaterMeter> createWaterstarM(MeterInfo &m);
-shared_ptr<HeatMeter> createCompact5(MeterInfo &m);
-shared_ptr<ElectricityMeter> createOmnipower(MeterInfo &m);
-shared_ptr<ElectricityMeter> createAmiplus(MeterInfo &m);
-shared_ptr<ElectricityMeter> createEM24(MeterInfo &m);
-shared_ptr<WaterMeter> createSupercom587(MeterInfo &m);
-shared_ptr<WaterMeter> createMKRadio3(MeterInfo &m);
-shared_ptr<WaterMeter> createApator08(MeterInfo &m);
-shared_ptr<WaterMeter> createApator162(MeterInfo &m);
-shared_ptr<WaterMeter> createIperl(MeterInfo &m);
-shared_ptr<WaterMeter> createHydrus(MeterInfo &m);
-shared_ptr<WaterMeter> createHydrodigit(MeterInfo &m);
-shared_ptr<WaterMeter> createIzar(MeterInfo &m);
-shared_ptr<WaterMeter> createIzar3(MeterInfo &m);
-shared_ptr<WaterMeter> createQ400(MeterInfo &m);
-shared_ptr<HeatCostMeter> createQCaloric(MeterInfo &m);
-shared_ptr<HeatCostMeter> createEurisII(MeterInfo &m);
-shared_ptr<HeatCostMeter> createFHKVDataIII(MeterInfo &m);
-shared_ptr<TempHygroMeter> createLansenTH(MeterInfo &m);
-shared_ptr<SmokeDetector> createLansenSM(MeterInfo &m);
-shared_ptr<PulseCounter> createLansenPU(MeterInfo &m);
-shared_ptr<DoorWindowDetector> createLansenDW(MeterInfo &m);
-shared_ptr<TempHygroMeter> createCMa12w(MeterInfo &m);
-shared_ptr<TempHygroMeter> createRfmAmb(MeterInfo &m);
-shared_ptr<WaterMeter> createRfmTX1(MeterInfo &m);
-shared_ptr<ElectricityMeter> createEHZP(MeterInfo &m);
-shared_ptr<ElectricityMeter> createESYSWM(MeterInfo &m);
-shared_ptr<ElectricityMeter> createEBZWMBE(MeterInfo &m);
-shared_ptr<WaterMeter> createTopasEsKr(MeterInfo &m);
+#define X(mname,linkmode,info,type,cname) shared_ptr<info> create##cname(MeterInfo &m);
+LIST_OF_METERS
+#undef X
 
-GenericMeter *createGeneric(WMBus *bus, MeterInfo &m);
+Generic *createGeneric(WMBus *bus, MeterInfo &m);
 
 #endif

@@ -10,6 +10,7 @@ TESTRESULT="ERROR"
 
 METERS="MyWarmWater supercom587 12345678 NOKEY
       MyColdWater supercom587 11111111 NOKEY
+      MyHeatCoster sontex868  27282728 NOKEY
       MoreWater   iperl       12345699 NOKEY
       WaterWater  iperl       33225544 NOKEY
       MyElectricity1 amiplus  10101010 NOKEY
@@ -31,13 +32,18 @@ METERS="MyWarmWater supercom587 12345678 NOKEY
       Elen1       ebzwmbe     22992299 NOKEY
       Elen2       esyswm      77997799 NOKEY
       Elen3       ehzp        55995599 NOKEY
+      Uater       ultrimis    95969798 NOKEY
       Vatten      apator08    004444dd NOKEY
       Wasser      rfmtx1      74737271 NOKEY
       Woter       waterstarm  20096221 BEDB81B52C29B5C143388CBB0D15A051
-      Witer       topaseskr   78563412 NOKEY"
+      Witer       topaseskr   78563412 NOKEY
+      Heater      sensostar   12345679 NOKEY
+      Voda        ev200       99993030 NOKEY
+      Vodda       emerlin868  95949392 NOKEY"
+
 
 cat simulations/simulation_t1.txt | grep '^{' > $TEST/test_expected.txt
-$PROG --format=json simulations/simulation_t1.txt $METERS  > $TEST/test_output.txt 2> $TEST/test_stderr.txt
+$PROG --format=json simulations/simulation_t1.txt $METERS > $TEST/test_output.txt 2> $TEST/test_stderr.txt
 if [ "$?" = "0" ]
 then
     cat $TEST/test_output.txt | sed 's/"timestamp":"....-..-..T..:..:..Z"/"timestamp":"1111-11-11T11:11:11Z"/' > $TEST/test_responses.txt
@@ -49,6 +55,10 @@ then
     else
         TESTRESULT="ERROR"
     fi
+else
+    echo "wmbusmeters returned error code: $?"
+    cat $TEST/test_output.txt
+    cat $TEST/test_stderr.txt
 fi
 
 cat simulations/simulation_t1.txt | grep '^|' | sed 's/^|//' > $TEST/test_expected.txt
@@ -64,6 +74,10 @@ then
     else
         TESTRESULT="ERROR"
     fi
+else
+    echo "wmbusmeters returned error code: $?"
+    cat $TEST/test_output.txt
+    cat $TEST/test_stderr.txt
 fi
 
 

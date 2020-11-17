@@ -73,8 +73,18 @@ struct ConfigRC1180
 
     bool decode(vector<uchar> &bytes)
     {
-        if (bytes.size() < 0x20) return false;
+        if (bytes.size() < 257) return false;
 
+        // Check that the returned memory here contains all 0xff bytes.
+        // Maybe there are dongles out there where this is not true?
+        // Anyway this is what it looks like for my dongle, so lets
+        // use that info to detect the dongle.
+        for (int i=128; i<256; ++i)
+        {
+            if (bytes[i] != 0xff) return false;
+        }
+        // And the last byte should be 0x3e.
+        if (bytes[256] != 0x3e) return false;
         radio_channel = bytes[0];
         radio_power = bytes[1];
         radio_data_rate = bytes[2];
@@ -121,11 +131,11 @@ struct WMBusRC1180 : public virtual WMBusCommonImplementation
     int numConcurrentLinkModes() { return 1; }
     bool canSetLinkModes(LinkModeSet lms)
     {
-        if (0 == countSetBits(lms.bits())) return false;
+        if (lms.empty()) return false;
         if (!supportedLinkModes().supports(lms)) return false;
         // Ok, the supplied link modes are compatible,
         // but rc1180 can only listen to one at a time.
-        return 1 == countSetBits(lms.bits());
+        return 1 == countSetBits(lms.asBits());
     }
     void processSerialData();
     void simulate();
@@ -158,6 +168,7 @@ shared_ptr<WMBus> openRC1180(string device, shared_ptr<SerialCommunicationManage
     if (serial_override)
     {
         WMBusRC1180 *imp = new WMBusRC1180(serial_override, manager);
+        imp->markAsNoLongerSerial();
         return shared_ptr<WMBus>(imp);
     }
 
@@ -167,7 +178,7 @@ shared_ptr<WMBus> openRC1180(string device, shared_ptr<SerialCommunicationManage
 }
 
 WMBusRC1180::WMBusRC1180(shared_ptr<SerialDevice> serial, shared_ptr<SerialCommunicationManager> manager) :
-    WMBusCommonImplementation(DEVICE_RC1180, manager, serial)
+    WMBusCommonImplementation(DEVICE_RC1180, manager, serial, true)
 {
     reset();
 }
@@ -316,7 +327,8 @@ void WMBusRC1180::processSerialData()
                 payload.insert(payload.end(), read_buffer_.begin()+payload_offset, read_buffer_.begin()+payload_offset+payload_len);
             }
             read_buffer_.erase(read_buffer_.begin(), read_buffer_.begin()+frame_length);
-            AboutTelegram about("", 0);
+            // It should be possible to get the rssi from the dongle.
+            AboutTelegram about("rc1180["+cached_device_id_+"]", 0);
             handleTelegram(about, payload);
         }
     }
@@ -341,7 +353,7 @@ AccessCheck detectRC1180(Detected *detected, shared_ptr<SerialCommunicationManag
     usleep(200*1000);
     serial->receive(&data);
 
-    if (data[0] != '>')
+    if (!data.empty() && data[0] != '>')
     {
        // no RC1180 device detected
        serial->close();
@@ -351,7 +363,7 @@ AccessCheck detectRC1180(Detected *detected, shared_ptr<SerialCommunicationManag
 
     data.clear();
 
-    // send '0' to get get the version string: "V 1.67 nanoRC1180868" or similar
+    // send '0' to get get the dongle configuration data.
     msg[0] = '0';
 
     serial->send(msg);
@@ -359,13 +371,37 @@ AccessCheck detectRC1180(Detected *detected, shared_ptr<SerialCommunicationManag
     usleep(1000*200);
 
     serial->receive(&data);
-    string hex = bin2hex(data);
 
     ConfigRC1180 co;
-    co.decode(data);
+    bool ok = co.decode(data);
+    if (!ok || co.uart_bps != 5)
+    {
+        // Decode must be ok and the uart bps must be 5,
+        // 5 means 19200 bps, which is the speed we are using.
+        // If not 5, then this is not a rc1180 dongle.
+        serial->close();
+        return AccessCheck::NotThere;
+    }
 
     debug("(rc1180) config: %s\n", co.str().c_str());
 
+    /*
+      Modification of the non-volatile memory should be done using the
+      wmbusmeters-admin program. So this code should not execute here.
+    if (co.rssi_mode == 0)
+    {
+        // Change the config so that the device appends an rssi byte.
+        vector<uchar> updat(4);
+        update[0] = 'M';
+        update[1] = 0x05; // Register 5, rssi_mode
+        update[2] = 1;    // Set value to 1 = enabled.
+        update[3] = 0xff; // Stop modifying memory.
+        serial->send(update);
+        usleep(1000*200);
+        // Reboot dongle.
+    }
+    */
+    // Now exit config mode and continue listeing.
     msg[0] = 'X';
     serial->send(msg);
 
@@ -373,7 +409,8 @@ AccessCheck detectRC1180(Detected *detected, shared_ptr<SerialCommunicationManag
 
     serial->close();
 
-    detected->setAsFound(co.dongleId(), WMBusDeviceType::DEVICE_RC1180, 19200, false, false);
+    detected->setAsFound(co.dongleId(), WMBusDeviceType::DEVICE_RC1180, 19200, false, false,
+        detected->specified_device.linkmodes);
 
     verbose("(rc1180) are you there? yes %s\n", co.dongleId().c_str());
 

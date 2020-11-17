@@ -390,7 +390,18 @@ string concatFields(Meter *m, Telegram *t, char c, vector<Print> &prints, vector
             s += m->datetimeOfUpdateHumanReadable() + c;
             continue;
         }
+        if (field == "device")
+        {
+            s += t->about.device + c;
+            continue;
+        }
+        if (field == "rssi_dbm")
+        {
+            s += to_string(t->about.rssi_dbm) + c;
+            continue;
+        }
 
+        bool handled = false;
         for (Print p : prints)
         {
             if (p.getValueString)
@@ -398,6 +409,7 @@ string concatFields(Meter *m, Telegram *t, char c, vector<Print> &prints, vector
                 if (field == p.vname)
                 {
                     s += p.getValueString() + c;
+                    handled = true;
                 }
             }
             else if (p.getValueDouble)
@@ -407,6 +419,7 @@ string concatFields(Meter *m, Telegram *t, char c, vector<Print> &prints, vector
                 if (field == var)
                 {
                     s += valueToString(p.getValueDouble(p.default_unit), p.default_unit) + c;
+                    handled = true;
                 }
                 else
                 {
@@ -418,10 +431,15 @@ string concatFields(Meter *m, Telegram *t, char c, vector<Print> &prints, vector
                         if (field == var)
                         {
                             s += valueToString(p.getValueDouble(u), u) + c;
+                            handled = true;
                         }
                     }
                 }
             }
+        }
+        if (!handled)
+        {
+            s += "?"+field+"?"+c;
         }
     }
     if (s.back() == c) s.pop_back();
@@ -461,7 +479,7 @@ bool MeterCommonImplementation::handleTelegram(AboutTelegram &about, vector<ucha
 
     char log_prefix[256];
     snprintf(log_prefix, 255, "(%s) log", meterName().c_str());
-    logTelegram(log_prefix, t.frame, t.header_size, t.suffix_size);
+    logTelegram(t.frame, t.header_size, t.suffix_size);
 
     // Invoke meter specific parsing!
     processContent(&t);
@@ -612,9 +630,9 @@ double ElectricityMeter::totalApparentEnergyProduction(Unit u) { return -NAN; }
 double ElectricityMeter::currentPowerConsumption(Unit u) { return -NAN; }
 double ElectricityMeter::currentPowerProduction(Unit u) { return -NAN; }
 
-double HeatCostMeter::currentConsumption(Unit u) { return -NAN; }
-string HeatCostMeter::setDate() { return "NAN"; }
-double HeatCostMeter::consumptionAtSetDate(Unit u) { return -NAN; }
+double HeatCostAllocationMeter::currentConsumption(Unit u) { return -NAN; }
+string HeatCostAllocationMeter::setDate() { return "NAN"; }
+double HeatCostAllocationMeter::consumptionAtSetDate(Unit u) { return -NAN; }
 
 void MeterCommonImplementation::setExpectedTPLSecurityMode(TPLSecurityMode tsm)
 {

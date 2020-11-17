@@ -120,6 +120,8 @@ METER_OBJS:=\
 	$(BUILD)/meter_ehzp.o \
 	$(BUILD)/meter_esyswm.o \
 	$(BUILD)/meter_em24.o \
+	$(BUILD)/meter_emerlin868.o \
+	$(BUILD)/meter_ev200.o \
 	$(BUILD)/meter_eurisii.o \
 	$(BUILD)/meter_fhkvdataiii.o \
 	$(BUILD)/meter_flowiq2200.o \
@@ -143,9 +145,12 @@ METER_OBJS:=\
 	$(BUILD)/meter_rfmamb.o \
 	$(BUILD)/meter_rfmtx1.o \
 	$(BUILD)/meter_supercom587.o \
+	$(BUILD)/meter_sontex868.o \
 	$(BUILD)/meter_topaseskr.o \
+	$(BUILD)/meter_ultrimis.o \
 	$(BUILD)/meter_vario451.o \
 	$(BUILD)/meter_waterstarm.o \
+	$(BUILD)/meter_sensostar.o \
 	$(BUILD)/printer.o \
 	$(BUILD)/serial.o \
 	$(BUILD)/shell.o \
