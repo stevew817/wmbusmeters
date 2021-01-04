@@ -4291,6 +4291,23 @@ Detected detectWMBusDeviceWithFile(SpecifiedDevice &specified_device,
         return detected;
     }
 
+    // Special case to cater for strictly defined ttys
+    if (specified_device.type != WMBusDeviceType::DEVICE_UNKNOWN &&
+        specified_device.type != WMBusDeviceType::DEVICE_AUTO &&
+        specified_device.is_tty)
+    {
+        debug("(lookup) defined driver: %s\n", toString(specified_device.type));
+        // A rawtty has a lms of all by default, eg no simulation_foo.txt:t1 nor --t1
+        if (specified_device.linkmodes.empty()) lms.setAll();
+
+        int b = 0;
+        if(specified_device.bps != "")
+            b = atoi(specified_device.bps.c_str());
+
+        detected.setAsFound("", specified_device.type, b, false, false, lms);
+        return detected;
+    }
+
     // Now handle all files with specified type.
     if (specified_device.type != WMBusDeviceType::DEVICE_UNKNOWN &&
         specified_device.type != WMBusDeviceType::DEVICE_AUTO &&
